@@ -1,23 +1,22 @@
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  name: fl-worker
+  name: fl-pubs
   namespace: fl
   labels:
-    app: fl-worker
+    app: fl-pubs
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: fl-worker
+      app: fl-pubs
   template:
     metadata:
       labels:
-        app: fl-worker
+        app: fl-pubs
     spec:
       serviceAccountName: fl-svc-account
       restartPolicy: "Always"
-      nodeSelector:
-        kubernetes.io/arch: amd64
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -26,18 +25,28 @@ spec:
                   - key: fl
                     operator: In
                     values:
-                      - "worker"
+                      - "core"
       containers:
-        - name: worker
-          image: "docker.io/mattrent/fl-worker:miniSL"
+        - name: pubs
+          image: "docker.io/mattrent/pubs-flask:latest"
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 4021
-            - containerPort: 4369
-          env:
-            - name: NODE_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
-            - name: DEPLOY_ENV
-              value: "kubernetes"
+            - containerPort: 5000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fl-pubs-service
+  namespace: fl
+  labels:
+    app: fl-pubs
+spec:
+  type: ClusterIP
+  selector:
+    app: fl-pubs
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      protocol: TCP

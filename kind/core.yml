@@ -21,43 +21,42 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            - matchExpressions:
-              - key: fl
-                operator: In
-                values:
-                - "core"
+              - matchExpressions:
+                  - key: fl
+                    operator: In
+                    values:
+                      - "core"
       containers:
-      - name: core
-        image: "ghcr.io/funlessdev/core:latest"
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 4000
-        - containerPort: 4369
-        env:
-        - name: SECRET_KEY_BASE
-          valueFrom:
-            secretKeyRef:
-              name: fl-core-secret-key-base
-              key: secret_key_base
-        - name: PGUSER
-          valueFrom:
-            secretKeyRef:
-              name: fl-core-secret-postgres-user
-              key: secret_key_user
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: fl-core-secret-postgres-password
-              key: secret_key_password
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
-        - name: DEPLOY_ENV
-          value: "kubernetes"
+        - name: core
+          image: "docker.io/mattrent/fl-core:miniSL"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+            - containerPort: 4369
+          env:
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: fl-core-secret-key-base
+                  key: secret_key_base
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: fl-core-secret-postgres-user
+                  key: secret_key_user
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: fl-core-secret-postgres-password
+                  key: secret_key_password
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DEPLOY_ENV
+              value: "kubernetes"
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
